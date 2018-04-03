@@ -1,7 +1,7 @@
 import { Map, List } from 'immutable'
 
 import { EditorState, ContentBlock, genKey } from 'draft-js'
-import { Block, Entity } from '../util/constants'
+import { Block, Entity } from './constants'
 
 // Copied verbatum from https://github.com/brijeshb42/medium-draft/blob/master/src/model/index.js
 
