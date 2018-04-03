@@ -24,8 +24,8 @@ export const Block = {
   CAPTION: 'caption',
   TODO: 'todo',
   IMAGE: 'atomic:image',
-  BREAK: 'atomic:break',
-};
+  BREAK: 'atomic:break'
+}
 
 export const Inline = {
   BOLD: 'BOLD',
@@ -33,16 +33,16 @@ export const Inline = {
   ITALIC: 'ITALIC',
   STRIKETHROUGH: 'STRIKETHROUGH',
   UNDERLINE: 'UNDERLINE',
-  HIGHLIGHT: 'HIGHLIGHT',
-};
+  HIGHLIGHT: 'HIGHLIGHT'
+}
 
 export const Entity = {
-  LINK: 'LINK',
-};
+  LINK: 'LINK'
+}
 
-export const HYPERLINK = 'hyperlink';
-export const HANDLED = 'handled';
-export const NOT_HANDLED = 'not_handled';
+export const HYPERLINK = 'hyperlink'
+export const HANDLED = 'handled'
+export const NOT_HANDLED = 'not_handled'
 
 export const KEY_COMMANDS = {
   addNewBlock: () => 'add-new-block',
@@ -50,8 +50,8 @@ export const KEY_COMMANDS = {
   showLinkInput: () => 'showlinkinput',
   unlink: () => 'unlink',
   toggleInline: (type = '') => `toggleinline:${type}`,
-  deleteBlock: () => 'delete-block',
-};
+  deleteBlock: () => 'delete-block'
+}
 
 export default {
   Block,
