@@ -1,7 +1,46 @@
 import { Map, List } from 'immutable'
 
-import { EditorState, ContentBlock, genKey } from 'draft-js'
+import { EditorState, ContentBlock, genKey, Modifier } from 'draft-js'
+import adjustBlockDepthForContentState from 'draft-js/lib/adjustBlockDepthForContentState'
+
 import { Block, Entity } from './constants'
+
+// source: https://github.com/sugarshin/draft-js-modifiers/blob/master/src/insertText.js
+
+export const insertText = (editorState, text, entity) => {
+  const selection = editorState.getSelection()
+  const content = editorState.getCurrentContent()
+  const newContent = Modifier[selection.isCollapsed() ? 'insertText' : 'replaceText'](
+    content,
+    selection,
+    text,
+    editorState.getCurrentInlineStyle(),
+    entity
+  )
+
+  return EditorState.push(
+    editorState,
+    newContent,
+    'insert-fragment'
+  )
+}
+
+// source: https://github.com/sugarshin/draft-js-modifiers/blob/master/src/adjustBlockDepth.js
+
+export const adjustBlockDepth = (
+  editorState,
+  adjustment,
+  maxDepth
+) => {
+  const content = adjustBlockDepthForContentState(
+    editorState.getCurrentContent(),
+    editorState.getSelection(),
+    adjustment,
+    maxDepth
+  )
+
+  return EditorState.push(editorState, content, 'adjust-depth')
+}
 
 // Copied verbatum from https://github.com/brijeshb42/medium-draft/blob/master/src/model/index.js
 
