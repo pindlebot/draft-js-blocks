@@ -26,5 +26,8 @@
     "rimraf": "^2.6.2",
     "snazzy": "^7.1.1",
     "standard": "^11.0.1"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }
