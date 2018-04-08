@@ -31,6 +31,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "left-indent": "^0.0.1"
+    "left-indent": "^0.0.3"
   }
 }
