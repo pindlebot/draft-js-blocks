@@ -1,9 +1,10 @@
 import { Map, List } from 'immutable'
 
-import { EditorState, ContentBlock, genKey, Modifier } from 'draft-js'
+import { EditorState, ContentBlock, SelectionState, genKey, Modifier } from 'draft-js'
 import adjustBlockDepthForContentState from 'draft-js/lib/adjustBlockDepthForContentState'
 
 import { Block, Entity } from './constants'
+import leftIndent from 'left-indent'
 
 // source: https://github.com/sugarshin/draft-js-modifiers/blob/master/src/insertText.js
 
@@ -23,6 +24,21 @@ export const insertText = (editorState, text, entity) => {
     newContent,
     'insert-fragment'
   )
+}
+
+// source: https://github.com/jpuri/draftjs-utils/blob/master/js/block.js
+
+export function getSelectedBlocksMap (editorState) {
+  const selectionState = editorState.getSelection()
+  const contentState = editorState.getCurrentContent()
+  const startKey = selectionState.getStartKey()
+  const endKey = selectionState.getEndKey()
+  const blockMap = contentState.getBlockMap()
+  return blockMap
+    .toSeq()
+    .skipUntil((_, k) => k === startKey)
+    .takeUntil((_, k) => k === endKey)
+    .concat([[endKey, blockMap.get(endKey)]])
 }
 
 // source: https://github.com/sugarshin/draft-js-modifiers/blob/master/src/adjustBlockDepth.js
@@ -219,4 +235,59 @@ export const isCursorBetweenLink = (editorState) => {
     }
   }
   return ret
+}
+
+export const selectBlock = (block) => {
+  let selection = SelectionState
+    .createEmpty(block.getKey())
+    .merge({
+      anchorOffset: 0,
+      focusOffset: block.getLength()
+    })
+  return selection
+}
+
+export const indentForward = (editorState, tabSize = 2) => {
+  const selectedBlockMap = getSelectedBlocksMap(editorState)
+  const endBlockSelection = selectBlock(selectedBlockMap.last())
+  const newContentState = selectedBlockMap
+    .reduce((acc, val) => Modifier.replaceText(
+      acc,
+      selectBlock(val),
+      leftIndent(val.getText(), 'forward', tabSize)
+    ), editorState.getCurrentContent())
+
+  let newEditorState = EditorState.push(
+    editorState,
+    newContentState,
+    'insert-characters'
+  )
+  const nextFocusOffset = endBlockSelection.getFocusOffset() + tabSize.length
+  newEditorState = EditorState.forceSelection(
+    newEditorState,
+    SelectionState.createEmpty().merge({
+      anchorKey: selectedBlockMap.first().getKey(),
+      focusKey: selectedBlockMap.last().getKey(),
+      focusOffset: nextFocusOffset,
+      anchorOffset: 0
+    })
+  )
+  return newEditorState
+}
+
+export const indentBackward = (editorState, tabSize = 2) => {
+  let newEditorState = editorState
+  const block = getCurrentBlock(editorState)
+  const newText = leftIndent(block.getText(), 'backward', tabSize)
+  let newContentState = Modifier.replaceText(
+    newEditorState.getCurrentContent(),
+    selectBlock(block),
+    newText
+  )
+  newEditorState = EditorState.push(
+    newEditorState,
+    newContentState,
+    'remove-range'
+  )
+  return newEditorState
 }

@@ -1760,6 +1760,10 @@ kind-of@^4.0.0:
   dependencies:
     is-buffer "^1.1.5"
 
+left-indent@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/left-indent/-/left-indent-0.0.1.tgz#0d2f181bc3156578c5b5d82d2c24e37b44c1c903"
+
 levn@^0.3.0, levn@~0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/levn/-/levn-0.3.0.tgz#3b09924edf9f083c0490fdd4c0bc4421e04764ee"

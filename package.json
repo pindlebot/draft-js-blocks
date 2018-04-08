@@ -1,6 +1,6 @@
 {
   "name": "draft-js-blocks",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
@@ -29,5 +29,8 @@
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "left-indent": "^0.0.1"
   }
 }
