@@ -961,6 +961,12 @@ doctrine@^2.0.2, doctrine@^2.1.0:
   dependencies:
     esutils "^2.0.2"
 
+draft-js-blocks@^0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/draft-js-blocks/-/draft-js-blocks-0.0.9.tgz#f23eaaf6e292cee99246e856ccfa1e3e1a5d70dd"
+  dependencies:
+    left-indent "^0.0.3"
+
 draft-js@^0.10.5:
   version "0.10.5"
   resolved "https://registry.yarnpkg.com/draft-js/-/draft-js-0.10.5.tgz#bfa9beb018fe0533dbb08d6675c371a6b08fa742"
@@ -1763,6 +1769,10 @@ kind-of@^4.0.0:
 left-indent@^0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/left-indent/-/left-indent-0.0.3.tgz#83a4b43d89ec61fd157f66fda0d4082a98aad6df"
+
+left-indent@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/left-indent/-/left-indent-0.0.4.tgz#8a14eaac895e2d4aa8562dbbf9a86c5a27e6c112"
 
 levn@^0.3.0, levn@~0.3.0:
   version "0.3.0"

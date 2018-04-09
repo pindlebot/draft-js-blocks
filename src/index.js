@@ -4,7 +4,7 @@ import { EditorState, ContentBlock, SelectionState, genKey, Modifier } from 'dra
 import adjustBlockDepthForContentState from 'draft-js/lib/adjustBlockDepthForContentState'
 
 import { Block, Entity } from './constants'
-import { leftIndent, getPadding } from 'left-indent'
+import { leftIndent, pad } from 'left-indent'
 
 // source: https://github.com/sugarshin/draft-js-modifiers/blob/master/src/insertText.js
 
@@ -262,7 +262,7 @@ export const indentForward = (editorState, tabSize = 2) => {
     newContentState,
     'insert-characters'
   )
-  const nextFocusOffset = endBlockSelection.getFocusOffset() + tabSize.length
+  const nextFocusOffset = endBlockSelection.getFocusOffset() + tabSize
   newEditorState = EditorState.forceSelection(
     newEditorState,
     SelectionState.createEmpty().merge({
@@ -279,13 +279,14 @@ export const indentBackward = (editorState, tabSize = 2) => {
   let newEditorState = editorState
   const block = getCurrentBlock(editorState)
   const text = block.getText()
-  const padding = getPadding(text, 'backward', tabSize)
+  const nextText = leftIndent(text, 'backward', tabSize)
+  let diff = nextText.length - nextText.trim().length
   let newContentState = Modifier.replaceText(
     newEditorState.getCurrentContent(),
     newEditorState.getSelection().merge({
       anchorOffset: 0
     }),
-    padding
+    pad(diff)
   )
   newEditorState = EditorState.push(
     newEditorState,
