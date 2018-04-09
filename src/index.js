@@ -295,7 +295,7 @@ export const indentBackward = (editorState, tabSize = 2) => {
   return newEditorState
 }
 
-export function getBlocksAfterOfSameType (editorState, block) {
+export function getSimilarBlocksBefore (editorState, block) {
   const contentState = editorState.getCurrentContent()
   let blockMap = contentState.getBlockMap()
   return blockMap
@@ -305,7 +305,7 @@ export function getBlocksAfterOfSameType (editorState, block) {
     .takeUntil((b, k) => b.getType() !== block.getType())
 }
 
-export function getBlocksBeforeOfSameType (editorState, block) {
+export function getSimilarBlocksAfter (editorState, block) {
   const contentState = editorState.getCurrentContent()
   let blockMap = contentState.getBlockMap()
   return blockMap
@@ -321,10 +321,10 @@ export function getBlockMapText (blockMap) {
   return blockMap.reduce((acc, val) => acc + val.getText() + '\n', '')
 }
 
-export function getContiguousBlocks (editorState) {
+export function getSimilarContiguousBlocks (editorState) {
   const block = getCurrentBlock(editorState)
-  const blocksBefore = getBlocksBeforeOfSameType(editorState, block)
-  const blocksAfter = getBlocksAfterOfSameType(editorState, block)
+  const blocksBefore = getSimilarBlocksBefore(editorState, block)
+  const blocksAfter = getSimilarBlocksAfter(editorState, block)
   const newBlockMap = blocksBefore.concat(
     [[block.getKey(), block]],
     blocksAfter
