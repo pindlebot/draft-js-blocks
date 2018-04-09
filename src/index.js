@@ -1,4 +1,4 @@
-import { Map, List } from 'immutable'
+import { Map, List, OrderedMap } from 'immutable'
 
 import { EditorState, ContentBlock, SelectionState, genKey, Modifier } from 'draft-js'
 import adjustBlockDepthForContentState from 'draft-js/lib/adjustBlockDepthForContentState'
@@ -293,4 +293,41 @@ export const indentBackward = (editorState, tabSize = 2) => {
     'remove-range'
   )
   return newEditorState
+}
+
+export function getBlocksAfterOfSameType (editorState, block) {
+  const contentState = editorState.getCurrentContent()
+  let blockMap = contentState.getBlockMap()
+  return blockMap
+    .toSeq()
+    .skipUntil((b, k) => k === block.getKey())
+    .rest()
+    .takeUntil((b, k) => b.getType() !== block.getType())
+}
+
+export function getBlocksBeforeOfSameType (editorState, block) {
+  const contentState = editorState.getCurrentContent()
+  let blockMap = contentState.getBlockMap()
+  return blockMap
+    .toSeq()
+    .reverse()
+    .skipUntil((b, k) => k === block.getKey())
+    .takeUntil((b, k) => b.getType() !== block.getType())
+    .reverse()
+    .butLast()
+}
+
+export function getBlockMapText (blockMap) {
+  return blockMap.reduce((acc, val) => acc + val.getText() + '\n', '')
+}
+
+export function getContiguousBlocks (editorState) {
+  const block = getCurrentBlock(editorState)
+  const blocksBefore = getBlocksBeforeOfSameType(editorState, block)
+  const blocksAfter = getBlocksAfterOfSameType(editorState, block)
+  const newBlockMap = blocksBefore.concat(
+    [[block.getKey(), block]],
+    blocksAfter
+  ).toOrderedMap()
+  return newBlockMap
 }
