@@ -319,10 +319,13 @@ export function getSimilarBlocksAfter (editorState, block) {
 }
 
 export function getBlockMapText (blockMap) {
-  return blockMap.reduce((acc, val) => acc + val.getText() + '\n', '')
+  const blocks = OrderedMap.isOrderedMap(blockMap)
+    ? blockMap.toSeq()
+    : blockMap
+  return blocks.reduce((acc, val) => acc + val.getText() + '\n', '')
 }
 
-export function getSimilarContiguousBlocks (editorState) {
+export function getContiguousBlocks (editorState) {
   const block = getCurrentBlock(editorState)
   const blocksBefore = getSimilarBlocksBefore(editorState, block)
   const blocksAfter = getSimilarBlocksAfter(editorState, block)
@@ -331,4 +334,37 @@ export function getSimilarContiguousBlocks (editorState) {
     blocksAfter
   ).toOrderedMap()
   return newBlockMap
+}
+
+export const removeAllInlineStyles = (editorState, style) => {
+  const currentContent = editorState
+    .getCurrentContent()
+  const selection = editorState.getSelection()
+  let newContentState = currentContent
+    .getBlockMap()
+    .reduce((acc, block) => {
+      let _acc = acc
+      block.findStyleRanges(
+        char => char.hasStyle(style),
+        (start, end) => {
+          _acc = Modifier.removeInlineStyle(
+            _acc,
+            SelectionState.createEmpty(block.getKey()).merge({
+              focusOffset: end,
+              anchorOffset: end - 1
+            }),
+            style
+          )
+        }
+      )
+      return _acc
+    }, currentContent)
+  return EditorState.forceSelection(
+    EditorState.push(
+      editorState,
+      newContentState,
+      'change-inline-style'
+    ),
+    selection
+  )
 }
