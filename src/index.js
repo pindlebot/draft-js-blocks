@@ -296,7 +296,7 @@ export const indentBackward = (editorState, tabSize = 2) => {
   return newEditorState
 }
 
-export function getSimilarBlocksBefore (editorState, block) {
+export function getWrappedBlocksBefore (editorState, block) {
   const contentState = editorState.getCurrentContent()
   let blockMap = contentState.getBlockMap()
   return blockMap
@@ -306,7 +306,7 @@ export function getSimilarBlocksBefore (editorState, block) {
     .takeUntil((b, k) => b.getType() !== block.getType())
 }
 
-export function getSimilarBlocksAfter (editorState, block) {
+export function getWrappedBlocksAfter (editorState, block) {
   const contentState = editorState.getCurrentContent()
   let blockMap = contentState.getBlockMap()
   return blockMap
@@ -327,8 +327,8 @@ export function getBlockMapText (blockMap) {
 
 export function getContiguousBlocks (editorState) {
   const block = getCurrentBlock(editorState)
-  const blocksBefore = getSimilarBlocksBefore(editorState, block)
-  const blocksAfter = getSimilarBlocksAfter(editorState, block)
+  const blocksBefore = getWrappedBlocksBefore(editorState, block)
+  const blocksAfter = getWrappedBlocksAfter(editorState, block)
   const newBlockMap = blocksBefore.concat(
     [[block.getKey(), block]],
     blocksAfter
@@ -336,22 +336,22 @@ export function getContiguousBlocks (editorState) {
   return newBlockMap
 }
 
-export const removeAllInlineStyles = (editorState, style) => {
+export const removeInlineStyle = (editorState, style, blockMap) => {
   const currentContent = editorState
     .getCurrentContent()
+  const blocks = blockMap || currentContent.getBlockMap()
   const selection = editorState.getSelection()
-  let newContentState = currentContent
-    .getBlockMap()
+  let newContentState = blocks
     .reduce((acc, block) => {
       let _acc = acc
       block.findStyleRanges(
-        char => char.hasStyle(style),
+        char => char.getStyle() !== null,
         (start, end) => {
           _acc = Modifier.removeInlineStyle(
             _acc,
             SelectionState.createEmpty(block.getKey()).merge({
               focusOffset: end,
-              anchorOffset: end - 1
+              anchorOffset: start
             }),
             style
           )
@@ -367,4 +367,9 @@ export const removeAllInlineStyles = (editorState, style) => {
     ),
     selection
   )
+}
+
+export const removeStyleForBlockType = (editorState, style) => {
+  const wrappedBlocks = getContiguousBlocks(editorState)
+  return removeInlineStyle(editorState, style, wrappedBlocks)
 }
