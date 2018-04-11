@@ -369,6 +369,17 @@ export const removeInlineStyle = (editorState, style, blockMap) => {
   )
 }
 
+export const hasInlineStyle = (
+  editorState,
+  style,
+  blockMap
+) => (blockMap || editorState.getCurrentContent().getBlockMap())
+  .toSeq()
+  .find(block => !!(
+    block.getCharacterList().toSeq()
+      .find(char => char.hasStyle(style)))
+  )
+
 export const removeStyleForBlockType = (editorState, style) => {
   const wrappedBlocks = getContiguousBlocks(editorState)
   return removeInlineStyle(editorState, style, wrappedBlocks)
