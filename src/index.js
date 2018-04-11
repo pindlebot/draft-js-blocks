@@ -296,7 +296,7 @@ export const indentBackward = (editorState, tabSize = 2) => {
   return newEditorState
 }
 
-export function getWrappedBlocksBefore (editorState, block) {
+export function getWrappedBlocksAfter (editorState, block) {
   const contentState = editorState.getCurrentContent()
   let blockMap = contentState.getBlockMap()
   return blockMap
@@ -306,7 +306,7 @@ export function getWrappedBlocksBefore (editorState, block) {
     .takeUntil((b, k) => b.getType() !== block.getType())
 }
 
-export function getWrappedBlocksAfter (editorState, block) {
+export function getWrappedBlocksBefore (editorState, block) {
   const contentState = editorState.getCurrentContent()
   let blockMap = contentState.getBlockMap()
   return blockMap
