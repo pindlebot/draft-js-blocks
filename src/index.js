@@ -2,6 +2,7 @@ import { Map, List, OrderedMap } from 'immutable'
 
 import { EditorState, ContentBlock, SelectionState, genKey, Modifier } from 'draft-js'
 import adjustBlockDepthForContentState from 'draft-js/lib/adjustBlockDepthForContentState'
+import DraftOffsetKey from 'draft-js/lib/DraftOffsetKey'
 
 import { Block, Entity } from './constants'
 import { leftIndent, pad } from 'left-indent'
@@ -383,4 +384,85 @@ export const hasInlineStyle = (
 export const removeStyleForBlockType = (editorState, style) => {
   const wrappedBlocks = getContiguousBlocks(editorState)
   return removeInlineStyle(editorState, style, wrappedBlocks)
+}
+
+// Lifted from https://github.com/draft-js-plugins/draft-js-plugins/
+
+// Set selection of editor to next/previous block
+export const setSelectionToBlock = (
+  editorState,
+  newActiveBlock
+) => {
+  // TODO verify that always a key-0-0 exists
+  const offsetKey = DraftOffsetKey.encode(newActiveBlock.getKey(), 0, 0)
+  const node = document.querySelectorAll(`[data-offset-key="${offsetKey}"]`)[0]
+  // set the native selection to the node so the caret is not in the text and
+  // the selectionState matches the native selection
+  const selection = window.getSelection()
+  const range = document.createRange()
+  range.setStart(node, 0)
+  range.setEnd(node, 0)
+  selection.removeAllRanges()
+  selection.addRange(range)
+
+  return EditorState.forceSelection(editorState, new SelectionState({
+    anchorKey: newActiveBlock.getKey(),
+    anchorOffset: 0,
+    focusKey: newActiveBlock.getKey(),
+    focusOffset: 0,
+    isBackward: false
+  }))
+}
+
+export const getBlockMapKeys = (contentState, startKey, endKey) => {
+  const blockMapKeys = contentState.getBlockMap().keySeq()
+  return blockMapKeys
+    .skipUntil((key) => key === startKey)
+    .takeUntil((key) => key === endKey)
+    .concat([endKey])
+}
+
+export const getSelectedBlocksMapKeys = (editorState) => {
+  const selectionState = editorState.getSelection()
+  const contentState = editorState.getCurrentContent()
+  return getBlockMapKeys(
+    contentState,
+    selectionState.getStartKey(),
+    selectionState.getEndKey()
+  )
+}
+
+export const blockInSelection = (editorState, blockKey) => {
+  const selectedBlocksKeys = getSelectedBlocksMapKeys(editorState)
+  return selectedBlocksKeys.includes(blockKey)
+}
+
+export const insertBlocks = (
+  editorState,
+  blocks
+) => {
+  const block = getCurrentBlock(editorState)
+  const content = editorState.getCurrentContent()
+  const blockMap = content.getBlockMap()
+  const blocksBefore = blockMap.toSeq().takeUntil((v) => (v === block))
+  const blocksAfter = blockMap.toSeq().skipUntil((v) => (v === block)).rest()
+  const newBlockMap = blocksBefore.concat(
+    [[block.getKey(), block]],
+    blocks.map(block => [block.getKey(), block]),
+    blocksAfter
+  ).toOrderedMap()
+  const lastBlockKey = blocks[blocks.length - 1].getKey()
+  const selection = editorState.getSelection()
+  const newContent = content.merge({
+    blockMap: newBlockMap,
+    selectionBefore: selection,
+    selectionAfter: selection.merge({
+      anchorKey: lastBlockKey,
+      anchorOffset: 0,
+      focusKey: lastBlockKey,
+      focusOffset: 0,
+      isBackward: false
+    })
+  })
+  return EditorState.push(editorState, newContent, 'split-block')
 }
