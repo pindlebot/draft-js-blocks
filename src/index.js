@@ -276,18 +276,15 @@ export const indentForward = (editorState, tabSize = 2) => {
   return newEditorState
 }
 
-export const indentBackward = (editorState, tabSize = 2) => {
+export const indentBackward = (editorState, text, tabSize = 2) => {
   let newEditorState = editorState
-  const block = getCurrentBlock(editorState)
-  const text = block.getText()
-  const leftWhitespace = text.match(LEFT_INDENT_RE)[0]
-
+  const leftWhitespace = text.match(LEFT_INDENT_RE)[1]
   let newContentState = Modifier.replaceText(
     newEditorState.getCurrentContent(),
     newEditorState.getSelection().merge({
       anchorOffset: 0
     }),
-    leftIndent(leftWhitespace, 'backward', tabSize)
+    `${pad(leftWhitespace.length + getDelta(leftWhitespace.length, 'backward', 2))}`
   )
   newEditorState = EditorState.push(
     newEditorState,
