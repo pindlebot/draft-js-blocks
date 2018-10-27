@@ -24,7 +24,8 @@ export const Block = {
   CAPTION: 'caption',
   TODO: 'todo',
   IMAGE: 'atomic:image',
-  BREAK: 'atomic:break'
+  BREAK: 'atomic:break',
+  VIDEO: 'atomic:video'
 }
 
 export const Inline = {
