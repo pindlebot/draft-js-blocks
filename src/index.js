@@ -3,9 +3,12 @@ import { Map, List, OrderedMap } from 'immutable'
 import { EditorState, ContentBlock, SelectionState, genKey, Modifier } from 'draft-js'
 import adjustBlockDepthForContentState from 'draft-js/lib/adjustBlockDepthForContentState'
 import DraftOffsetKey from 'draft-js/lib/DraftOffsetKey'
+import ContentBlockNode from 'draft-js/lib/ContentBlockNode'
 
 import { Block, Entity } from './constants'
 import { leftIndent, pad, LEFT_INDENT_RE, getDelta } from 'left-indent'
+
+export const experimentalTreeDataSupport = (window.__DRAFT_GKX || {}).draft_tree_data_support
 
 // source: https://github.com/sugarshin/draft-js-modifiers/blob/master/src/insertText.js
 
@@ -158,7 +161,7 @@ export const updateDataOfBlock = (editorState, block, newData) => {
 Used from [react-rte](https://github.com/sstur/react-rte/blob/master/src/lib/insertBlockAfter.js)
 by [sstur](https://github.com/sstur)
 */
-export const addNewBlockAt = (
+export const defaultAddNewBlockAt = (
   editorState,
   pivotBlockKey,
   newBlockType = Block.UNSTYLED,
@@ -203,6 +206,70 @@ export const addNewBlockAt = (
   })
   return EditorState.push(editorState, newContent, 'split-block')
 }
+
+export const experimentalAddNewBlockAt = (
+  editorState,
+  pivotBlockKey,
+  newBlockType = Block.UNSTYLED,
+  initialData = {}
+) => {
+  const content = editorState.getCurrentContent()
+  const blockMap = content.getBlockMap()
+  const block = blockMap.get(pivotBlockKey)
+  if (!block) {
+    throw new Error(`The pivot key - ${pivotBlockKey} is not present in blockMap.`)
+  }
+
+  const nextSiblingBlockKey = block.getNextSiblingKey() || null
+  const nextSiblingBlock = nextSiblingBlockKey && blockMap.get(nextSiblingBlockKey)
+
+  const blocksBefore = blockMap.toSeq().takeUntil((v) => (v === block))
+  const blocksAfter = blockMap.toSeq().skipUntil((v) => (v === block)).skip(2)
+  const newBlockKey = genKey()
+
+  const newBlock = new ContentBlockNode({
+    key: newBlockKey,
+    type: newBlockType,
+    text: '',
+    characterList: List(),
+    depth: 0,
+    data: Map(getDefaultBlockData(newBlockType, initialData)),
+    children: List(),
+    nextSibling: nextSiblingBlockKey,
+    prevSibling: pivotBlockKey,
+    parent: block.getType() === newBlockType && block.getParentKey()
+      ? block.getParentKey()
+      : null
+  })
+
+  const newBlockMap = blocksBefore.concat(
+    [
+      [pivotBlockKey, block],
+      [newBlockKey, newBlock]
+    ],
+    nextSiblingBlockKey
+      ? [[nextSiblingBlockKey, nextSiblingBlock.mergeDeep({ prevSibling: newBlockKey })]]
+      : [],
+    blocksAfter
+  ).toOrderedMap()
+
+  const selection = editorState.getSelection()
+
+  const newContent = content.merge({
+    blockMap: newBlockMap,
+    selectionBefore: selection,
+    selectionAfter: selection.merge({
+      anchorKey: newBlockKey,
+      anchorOffset: 0,
+      focusKey: newBlockKey,
+      focusOffset: 0,
+      isBackward: false
+    })
+  })
+  return EditorState.push(editorState, newContent, 'split-block')
+}
+
+export const addNewBlockAt = experimentalTreeDataSupport ? experimentalAddNewBlockAt : defaultAddNewBlockAt
 
 /**
  * Check whether the cursor is between entity of type LINK
